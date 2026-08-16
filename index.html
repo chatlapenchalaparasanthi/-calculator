@@ -3,107 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Calculator</title>
+    <title>Pro Calculator</title>
     <style>
+        :root {
+            --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --calc-bg: #ffffff;
+            --text: #333;
+            --btn: #f0f0f0;
+            --btn-hover: #e0e0e0;
+        }
+        .dark {
+            --bg: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            --calc-bg: #1e1e1e;
+            --text: #fff;
+            --btn: #2d2d2d;
+            --btn-hover: #3d3d3d;
+        }
+        * { box-sizing: border-box; }
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--bg);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 10px;
+            transition: 0.3s;
         }
         .calculator {
-            background: #fff;
+            background: var(--calc-bg);
             padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            width: 320px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            width: 100%;
+            max-width: 400px;
+            color: var(--text);
         }
-        h1 {
-            text-align: center;
-            color: #667eea;
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 15px;
+        }
+        .top-bar button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 10px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        h1 { 
+            text-align: center; 
+            color: #667eea; 
+            margin: 0 0 15px; 
+            font-size: 22px;
         }
         #display {
             width: 100%;
-            height: 60px;
-            font-size: 24px;
+            height: 70px;
+            font-size: 28px;
             text-align: right;
-            padding: 10px;
+            padding: 15px;
             border: 2px solid #667eea;
-            border-radius: 8px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            background: var(--btn);
+            color: var(--text);
+        }
+        .history {
+            max-height: 90px;
+            overflow-y: auto;
+            font-size: 13px;
             margin-bottom: 15px;
-            box-sizing: border-box;
+            text-align: right;
+            opacity: 0.7;
+            padding-right: 5px;
         }
         .buttons {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 10px;
         }
         button {
-            height: 60px;
-            font-size: 18px;
+            height: 55px;
+            font-size: 17px;
+            font-weight: 500;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            background: #f0f0f0;
-            transition: 0.2s;
+            background: var(--btn);
+            color: var(--text);
+            transition: 0.15s;
         }
-        button:hover {
-            background: #ddd;
-        }
-        .operator {
-            background: #667eea;
-            color: white;
-        }
-        .operator:hover {
-            background: #5568d3;
-        }
-        .clear {
-            background: #ff4757;
-            color: white;
-        }
-        .equal {
-            background: #2ed573;
-            color: white;
-        }
+        button:hover { background: var(--btn-hover); transform: scale(0.95); }
+        button:active { transform: scale(0.9); }
+        .operator { background: #667eea; color: white; }
+        .clear { background: #ff4757; color: white; }
+        .equal { background: #2ed573; color: white; grid-column: span 2; }
+        .sci { background: #ffa502; color: white; font-size: 13px; }
+        .memory { background: #70a1ff; color: white; font-size: 14px; }
     </style>
 </head>
 <body>
     <div class="calculator">
-        <h1>My Calculator</h1>
-        <input type="text" id="display" readonly>
+        <div class="top-bar">
+            <button onclick="toggleDark()">🌙 Dark</button>
+            <button onclick="clearHistory()">🗑️ Clear History</button>
+        </div>
+        <h1>Pro Calculator</h1>
+        <div class="history" id="history"></div>
+        <input type="text" id="display" readonly placeholder="0">
         <div class="buttons">
-            <button class="clear" onclick="clearDisplay()">C</button>
+            <!-- Row 1: Memory + Scientific -->
+            <button class="memory" onclick="memoryClear()">MC</button>
+            <button class="memory" onclick="memoryRecall()">MR</button>
+            <button class="memory" onclick="memoryAdd()">M+</button>
+            <button class="memory" onclick="memorySubtract()">M-</button>
+            <button class="sci" onclick="appendToDisplay('Math.factorial(')">x!</button>
+            
+            <!-- Row 2: Scientific -->
+            <button class="sci" onclick="appendToDisplay('Math.sin(')">sin</button>
+            <button class="sci" onclick="appendToDisplay('Math.cos(')">cos</button>
+            <button class="sci" onclick="appendToDisplay('Math.tan(')">tan</button>
+            <button class="sci" onclick="appendToDisplay('Math.log10(')">log</button>
+            <button class="sci" onclick="appendToDisplay('Math.log(')">ln</button>
+            
+            <!-- Row 3: Scientific -->
+            <button class="sci" onclick="appendToDisplay('**')">x^y</button>
+            <button class="sci" onclick="appendToDisplay('**2')">x²</button>
+            <button class="sci" onclick="appendToDisplay('**0.5')">√x</button>
+            <button class="sci" onclick="appendToDisplay('1/(')">1/x</button>
+            <button class="sci" onclick="appendToDisplay('Math.PI')">π</button>
+            
+            <!-- Row 4: Basic -->
+            <button class="clear" onclick="clearDisplay()">AC</button>
             <button onclick="backspace()">⌫</button>
             <button onclick="appendToDisplay('%')">%</button>
+            <button onclick="appendToDisplay(')">(</button>
             <button class="operator" onclick="appendToDisplay('/')">÷</button>
             
+            <!-- Row 5 -->
             <button onclick="appendToDisplay('7')">7</button>
             <button onclick="appendToDisplay('8')">8</button>
             <button onclick="appendToDisplay('9')">9</button>
+            <button onclick="appendToDisplay(')')">)</button>
             <button class="operator" onclick="appendToDisplay('*')">×</button>
             
+            <!-- Row 6 -->
             <button onclick="appendToDisplay('4')">4</button>
             <button onclick="appendToDisplay('5')">5</button>
             <button onclick="appendToDisplay('6')">6</button>
+            <button onclick="appendToDisplay('.')">.</button>
             <button class="operator" onclick="appendToDisplay('-')">-</button>
             
+            <!-- Row 7 -->
             <button onclick="appendToDisplay('1')">1</button>
             <button onclick="appendToDisplay('2')">2</button>
             <button onclick="appendToDisplay('3')">3</button>
             <button class="operator" onclick="appendToDisplay('+')">+</button>
-            
-            <button onclick="appendToDisplay('0')">0</button>
-            <button onclick="appendToDisplay('.')">.</button>
-            <button onclick="appendToDisplay('Math.sqrt(')">√</button>
             <button class="equal" onclick="calculate()">=</button>
+            
+            <!-- Row 8 -->
+            <button onclick="appendToDisplay('0')" style="grid-column: span 2;">0</button>
+            <button onclick="appendToDisplay('00')">00</button>
+            <button onclick="appendToDisplay('Math.E')">e</button>
         </div>
     </div>
 
     <script>
+        let history = [];
+        let memory = 0;
+        
+        // Add factorial function
+        Math.factorial = function(n) {
+            if(n < 0) return NaN;
+            if(n === 0) return 1;
+            let result = 1;
+            for(let i = 2; i <= n; i++) result *= i;
+            return result;
+        }
+
         function appendToDisplay(value) {
             document.getElementById('display').value += value;
         }
@@ -116,12 +197,40 @@
         }
         function calculate() {
             try {
-                let result = eval(document.getElementById('display').value);
+                let exp = document.getElementById('display').value;
+                let result = eval(exp);
                 document.getElementById('display').value = result;
+                history.unshift(exp + ' = ' + result);
+                if(history.length > 8) history.pop();
+                updateHistory();
             } catch (error) {
                 document.getElementById('display').value = 'Error';
             }
         }
+        function updateHistory() {
+            document.getElementById('history').innerHTML = history.join('<br>');
+        }
+        function clearHistory() {
+            history = [];
+            updateHistory();
+        }
+        function toggleDark() {
+            document.body.classList.toggle('dark');
+        }
+        // Memory functions
+        function memoryClear() { memory = 0; }
+        function memoryRecall() { appendToDisplay(memory); }
+        function memoryAdd() { memory += parseFloat(document.getElementById('display').value) || 0; }
+        function memorySubtract() { memory -= parseFloat(document.getElementById('display').value) || 0; }
+        
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if(e.key >= '0' && e.key <= '9') appendToDisplay(e.key);
+            if(['+', '-', '*', '/', '.'].includes(e.key)) appendToDisplay(e.key);
+            if(e.key === 'Enter') calculate();
+            if(e.key === 'Backspace') backspace();
+            if(e.key === 'Escape') clearDisplay();
+        });
     </script>
 </body>
 </html>
